@@ -10,11 +10,35 @@ local PrintLib = {}
 	PrintLib.GSPrint(string, 0, col1 - ∞) -------------- Static Gradient
 --]]
 
+local _usedMarkers = {}
+local _chars = "abcdefghijklmnopqrstuvwxyz0123456789"
+
+local function genMarker()
+	local len = math.random(16, 32)
+	local mk = ""
+	for i = 1, len do
+		local idx = math.random(1, #_chars)
+		mk = mk .. string.sub(_chars, idx, idx)
+	end
+	return mk
+end
+
+local function getUniqueMarker()
+	local mk = genMarker()
+	local attempts = 0
+	while _usedMarkers[mk] and attempts < 100 do
+		mk = genMarker()
+		attempts = attempts + 1
+	end
+	_usedMarkers[mk] = true
+	return mk
+end
+
 function PrintLib.CPrint(txt, col)
 	if type(col) == "number" then
 		col = Color3.fromRGB(col, col, col)
 	end
-	local k = string.char(1) .. tostring(math.random(1000, 9999))
+	local k = getUniqueMarker()
 	local ft = tostring(txt) .. k
 	print(ft)
 	task.spawn(function()
@@ -46,7 +70,7 @@ end
 
 function PrintLib.RPrint(txt, spd)
 	spd = spd or 1
-	local k = string.char(1) .. tostring(math.random(1000, 9999))
+	local k = getUniqueMarker()
 	local ft = tostring(txt) .. k
 	print(ft)
 	task.spawn(function()
@@ -85,7 +109,7 @@ function PrintLib.SPrint(txt, spd, ...)
 	spd = spd or 1
 	local cols = {...}
 	if #cols == 0 then return end
-	local k = string.char(1) .. tostring(math.random(1000, 9999))
+	local k = getUniqueMarker()
 	local ft = tostring(txt) .. k
 	print(ft)
 	task.spawn(function()
@@ -128,7 +152,7 @@ function PrintLib.SIPrint(txt, spd, ...)
 	spd = spd or 1
 	local cols = {...}
 	if #cols == 0 then return end
-	local k = string.char(1) .. tostring(math.random(1000, 9999))
+	local k = getUniqueMarker()
 	local ft = tostring(txt) .. k
 	print(ft)
 	task.spawn(function()
@@ -167,7 +191,7 @@ function PrintLib.GPrint(txt, spd, ...)
 	spd = spd or 1
 	local cols = {...}
 	if #cols == 0 then return end
-	local k = string.char(1) .. tostring(math.random(1000, 9999))
+	local k = getUniqueMarker()
 	local ft = tostring(txt) .. k
 	print(ft)
 	task.spawn(function()
@@ -213,7 +237,7 @@ end
 function PrintLib.GSPrint(txt, rot, ...)
 	local cols = {...}
 	if #cols == 0 then return end
-	local k = string.char(1) .. tostring(math.random(1000, 9999))
+	local k = getUniqueMarker()
 	local ft = tostring(txt) .. k
 	print(ft)
 	task.spawn(function()
