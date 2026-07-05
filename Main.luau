@@ -1,191 +1,255 @@
 local PrintLib = {}
+
 --[[
-    Examples:
-    PrintLib.CPrint(text, color)          -- color: Color3 or number (0-255 grayscale)
-    PrintLib.RPrint(text, speed)          -- rainbow, speed = seconds per cycle
-    PrintLib.SPrint(text, speed, colors)  -- smooth switch, speed per transition
-    PrintLib.SIPrint(text, speed, colors) -- instant switch
-    PrintLib.GPrint(text, speed, colors)  -- animated gradient across chars
-    PrintLib.GSPrint(text, colors)        -- static gradient
-]]
+	This was been ai optimizated btw dwbi
+	PrintLib.CPrint(string, color)   ---------------------- Colored print
+	PrintLib.RPrint(string, speed) ---------------------- Rainbow print (rainbow speed)
+	PrintLib.SPrint(string, speed, color1 - ∞) -------- Tween Color Switch 
+	PrintLib.SIPrint(string, speed, color1 - ∞) ------- Instant Color Switch 
+	PrintLib.GPrint(string, speed, col1 - ∞)  --------- Tween Gradient
+	PrintLib.GSPrint(string, 0, col1 - ∞) -------------- Static Gradient
+--]]
 
-local function getLabel(k)
-    local gui = game:GetService("CoreGui")
-    local t = tick()
-    while tick() - t < 2 do
-        local con = gui:FindFirstChild("DevConsoleMaster")
-        if con then
-            for _, v in pairs(con:GetDescendants()) do
-                if v:IsA("TextLabel") and string.find(v.Text, k, 1, true) then
-                    return v
-                end
-            end
-        end
-        task.wait()
-    end
-    return nil
+function PrintLib.CPrint(txt, col)
+	if type(col) == "number" then
+		col = Color3.fromRGB(col, col, col)
+	end
+	local k = string.char(1) .. tostring(math.random(1000, 9999))
+	local ft = tostring(txt) .. k
+	print(ft)
+	task.spawn(function()
+		local lbl = nil
+		local cg = game:GetService("CoreGui")
+		local tm = tick()
+		while not lbl and tick() - tm < 2 do
+			local con = cg:FindFirstChild("DevConsoleMaster")
+			if con then
+				for _, v in pairs(con:GetDescendants()) do
+					if v:IsA("TextLabel") and string.find(v.Text, k, 1, true) then
+						lbl = v
+						break
+					end
+				end
+			end
+			if not lbl then task.wait() end
+		end
+		if lbl then
+			lbl.RichText = true
+			local r = math.floor(col.R * 255)
+			local g = math.floor(col.G * 255)
+			local b = math.floor(col.B * 255)
+			local ot = string.gsub(lbl.Text, k, "")
+			lbl.Text = string.format("<font color='rgb(%d,%d,%d)'>%s</font>", r, g, b, ot)
+		end
+	end)
 end
 
-local function colText(txt, col)
-    local r = math.floor(math.clamp(col.R, 0, 1) * 255)
-    local g = math.floor(math.clamp(col.G, 0, 1) * 255)
-    local b = math.floor(math.clamp(col.B, 0, 1) * 255)
-    return string.format("<font color='rgb(%d,%d,%d)'>%s</font>", r, g, b, txt)
+function PrintLib.RPrint(txt, spd)
+	spd = spd or 1
+	local k = string.char(1) .. tostring(math.random(1000, 9999))
+	local ft = tostring(txt) .. k
+	print(ft)
+	task.spawn(function()
+		local lbl = nil
+		local cg = game:GetService("CoreGui")
+		local tm = tick()
+		while not lbl and tick() - tm < 2 do
+			local con = cg:FindFirstChild("DevConsoleMaster")
+			if con then
+				for _, v in pairs(con:GetDescendants()) do
+					if v:IsA("TextLabel") and string.find(v.Text, k, 1, true) then
+						lbl = v
+						break
+					end
+				end
+			end
+			if not lbl then task.wait() end
+		end
+		if lbl then
+			lbl.RichText = true
+			local ot = string.gsub(lbl.Text, k, "")
+			local h = 0
+			while task.wait() do
+				h = (h + spd * task.wait()) % 1
+				local c = Color3.fromHSV(h, 1, 1)
+				local r = math.floor(c.R * 255)
+				local g = math.floor(c.G * 255)
+				local b = math.floor(c.B * 255)
+				lbl.Text = string.format("<font color='rgb(%d,%d,%d)'>%s</font>", r, g, b, ot)
+			end
+		end
+	end)
 end
 
-function PrintLib.CPrint(text, color)
-    local col
-    if type(color) == "number" then
-        local b = math.clamp(color, 0, 255) / 255
-        col = Color3.new(b, b, b)
-    else
-        col = color or Color3.new(1, 1, 1)
-    end
-    local k = string.char(1) .. tostring(math.random(1000, 9999))
-    print(tostring(text) .. k)
-    task.spawn(function()
-        local l = getLabel(k)
-        if l then
-            l.RichText = true
-            local orig = string.gsub(l.Text, k, "")
-            l.Text = colText(orig, col)
-        end
-    end)
+function PrintLib.SPrint(txt, spd, ...)
+	spd = spd or 1
+	local cols = {...}
+	if #cols == 0 then return end
+	local k = string.char(1) .. tostring(math.random(1000, 9999))
+	local ft = tostring(txt) .. k
+	print(ft)
+	task.spawn(function()
+		local lbl = nil
+		local cg = game:GetService("CoreGui")
+		local tm = tick()
+		while not lbl and tick() - tm < 2 do
+			local con = cg:FindFirstChild("DevConsoleMaster")
+			if con then
+				for _, v in pairs(con:GetDescendants()) do
+					if v:IsA("TextLabel") and string.find(v.Text, k, 1, true) then
+						lbl = v
+						break
+					end
+				end
+			end
+			if not lbl then task.wait() end
+		end
+		if lbl then
+			lbl.RichText = true
+			local ot = string.gsub(lbl.Text, k, "")
+			local ci = 1
+			local ts = game:GetService("TweenService")
+			local ti = TweenInfo.new(spd, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true, 0)
+			local tc = cols[ci]
+			local tw = ts:Create(lbl, ti, {TextColor3 = tc})
+			tw:Play()
+			while task.wait() do
+				ci = (ci % #cols) + 1
+				tc = cols[ci]
+				tw = ts:Create(lbl, ti, {TextColor3 = tc})
+				tw:Play()
+				task.wait(spd)
+			end
+		end
+	end)
 end
 
-function PrintLib.RPrint(text, speed)
-    speed = speed or 1
-    local k = string.char(1) .. tostring(math.random(1000, 9999))
-    print(tostring(text) .. k)
-    task.spawn(function()
-        local l = getLabel(k)
-        if not l then return end
-        l.RichText = true
-        local orig = string.gsub(l.Text, k, "")
-        local h = 0
-        while l and l.Parent do
-            local dt = task.wait()
-            h = (h + dt / speed) % 1
-            l.Text = colText(orig, Color3.fromHSV(h, 1, 1))
-        end
-    end)
+function PrintLib.SIPrint(txt, spd, ...)
+	spd = spd or 1
+	local cols = {...}
+	if #cols == 0 then return end
+	local k = string.char(1) .. tostring(math.random(1000, 9999))
+	local ft = tostring(txt) .. k
+	print(ft)
+	task.spawn(function()
+		local lbl = nil
+		local cg = game:GetService("CoreGui")
+		local tm = tick()
+		while not lbl and tick() - tm < 2 do
+			local con = cg:FindFirstChild("DevConsoleMaster")
+			if con then
+				for _, v in pairs(con:GetDescendants()) do
+					if v:IsA("TextLabel") and string.find(v.Text, k, 1, true) then
+						lbl = v
+						break
+					end
+				end
+			end
+			if not lbl then task.wait() end
+		end
+		if lbl then
+			lbl.RichText = true
+			local ot = string.gsub(lbl.Text, k, "")
+			local ci = 1
+			while task.wait(spd) do
+				local c = cols[ci]
+				local r = math.floor(c.R * 255)
+				local g = math.floor(c.G * 255)
+				local b = math.floor(c.B * 255)
+				lbl.Text = string.format("<font color='rgb(%d,%d,%d)'>%s</font>", r, g, b, ot)
+				ci = (ci % #cols) + 1
+			end
+		end
+	end)
 end
 
-function PrintLib.SPrint(text, speed, ...)
-    speed = speed or 1
-    local colors = {...}
-    if #colors == 0 then return end
-    local k = string.char(1) .. tostring(math.random(1000, 9999))
-    print(tostring(text) .. k)
-    task.spawn(function()
-        local l = getLabel(k)
-        if not l then return end
-        l.RichText = true
-        local orig = string.gsub(l.Text, k, "")
-        local idx = 1
-        local cur = colors[1]
-        while l and l.Parent do
-            local nxt = (idx % #colors) + 1
-            local target = colors[nxt]
-            local elapsed = 0
-            while elapsed < speed and l and l.Parent do
-                local dt = task.wait()
-                elapsed = elapsed + dt
-                local a = math.min(elapsed / speed, 1)
-                local blended = cur:Lerp(target, a)
-                l.Text = colText(orig, blended)
-            end
-            cur = target
-            idx = nxt
-        end
-    end)
+function PrintLib.GPrint(txt, spd, ...)
+	spd = spd or 1
+	local cols = {...}
+	if #cols == 0 then return end
+	local k = string.char(1) .. tostring(math.random(1000, 9999))
+	local ft = tostring(txt) .. k
+	print(ft)
+	task.spawn(function()
+		local lbl = nil
+		local cg = game:GetService("CoreGui")
+		local tm = tick()
+		while not lbl and tick() - tm < 2 do
+			local con = cg:FindFirstChild("DevConsoleMaster")
+			if con then
+				for _, v in pairs(con:GetDescendants()) do
+					if v:IsA("TextLabel") and string.find(v.Text, k, 1, true) then
+						lbl = v
+						break
+					end
+				end
+			end
+			if not lbl then task.wait() end
+		end
+		if lbl then
+			lbl.RichText = true
+			local ot = string.gsub(lbl.Text, k, "")
+			while task.wait() do
+				local gt = ""
+				local to = tick() * spd
+				for i = 1, #ot do
+					local pr = (i - 1) / (#ot - 1)
+					local ap = (pr + to) % 1
+					local ci = math.floor(ap * (#cols - 1)) + 1
+					local ni = math.min(ci + 1, #cols)
+					local bl = (ap * (#cols - 1)) - (ci - 1)
+					local bc = cols[ci]:Lerp(cols[ni], bl)
+					local r = math.floor(bc.R * 255)
+					local g = math.floor(bc.G * 255)
+					local b = math.floor(bc.B * 255)
+					gt = gt .. string.format("<font color='rgb(%d,%d,%d)'>%s</font>", r, g, b, string.sub(ot, i, i))
+				end
+				lbl.Text = gt
+			end
+		end
+	end)
 end
 
-function PrintLib.SIPrint(text, speed, ...)
-    speed = speed or 1
-    local colors = {...}
-    if #colors == 0 then return end
-    local k = string.char(1) .. tostring(math.random(1000, 9999))
-    print(tostring(text) .. k)
-    task.spawn(function()
-        local l = getLabel(k)
-        if not l then return end
-        l.RichText = true
-        local orig = string.gsub(l.Text, k, "")
-        local idx = 1
-        local acc = 0
-        while l and l.Parent do
-            local dt = task.wait()
-            acc = acc + dt
-            if acc >= speed then
-                acc = 0
-                l.Text = colText(orig, colors[idx])
-                idx = (idx % #colors) + 1
-            end
-        end
-    end)
-end
-
-function PrintLib.GPrint(text, speed, ...)
-    speed = speed or 1
-    local colors = {...}
-    if #colors == 0 then return end
-    local k = string.char(1) .. tostring(math.random(1000, 9999))
-    print(tostring(text) .. k)
-    task.spawn(function()
-        local l = getLabel(k)
-        if not l then return end
-        l.RichText = true
-        local orig = string.gsub(l.Text, k, "")
-        local len = #orig
-        if len == 0 then return end
-        while l and l.Parent do
-            local off = tick() * speed
-            local parts = {}
-            for i = 1, len do
-                local prog = (len > 1) and ((i - 1) / (len - 1)) or 0
-                local anim = (prog + off) % 1
-                local segs = #colors - 1
-                local pos = anim * segs
-                local idx = math.floor(pos) + 1
-                local nxt = math.min(idx + 1, #colors)
-                local blend = pos - math.floor(pos)
-                local blended = colors[idx]:Lerp(colors[nxt], blend)
-                local ch = string.sub(orig, i, i)
-                parts[i] = colText(ch, blended)
-            end
-            l.Text = table.concat(parts)
-            task.wait()
-        end
-    end)
-end
-
-function PrintLib.GSPrint(text, rotation, ...)
-    local colors = {...}
-    if #colors == 0 then return end
-    local k = string.char(1) .. tostring(math.random(1000, 9999))
-    print(tostring(text) .. k)
-    task.spawn(function()
-        local l = getLabel(k)
-        if not l then return end
-        l.RichText = true
-        local orig = string.gsub(l.Text, k, "")
-        local len = #orig
-        if len == 0 then return end
-        local parts = {}
-        for i = 1, len do
-            local prog = (len > 1) and ((i - 1) / (len - 1)) or 0
-            local segs = #colors - 1
-            local pos = prog * segs
-            local idx = math.floor(pos) + 1
-            local nxt = math.min(idx + 1, #colors)
-            local blend = pos - math.floor(pos)
-            local blended = colors[idx]:Lerp(colors[nxt], blend)
-            local ch = string.sub(orig, i, i)
-            parts[i] = colText(ch, blended)
-        end
-        l.Text = table.concat(parts)
-    end)
+function PrintLib.GSPrint(txt, rot, ...)
+	local cols = {...}
+	if #cols == 0 then return end
+	local k = string.char(1) .. tostring(math.random(1000, 9999))
+	local ft = tostring(txt) .. k
+	print(ft)
+	task.spawn(function()
+		local lbl = nil
+		local cg = game:GetService("CoreGui")
+		local tm = tick()
+		while not lbl and tick() - tm < 2 do
+			local con = cg:FindFirstChild("DevConsoleMaster")
+			if con then
+				for _, v in pairs(con:GetDescendants()) do
+					if v:IsA("TextLabel") and string.find(v.Text, k, 1, true) then
+						lbl = v
+						break
+					end
+				end
+			end
+			if not lbl then task.wait() end
+		end
+		if lbl then
+			lbl.RichText = true
+			local ot = string.gsub(lbl.Text, k, "")
+			local gt = ""
+			for i = 1, #ot do
+				local pr = (#ot > 1) and (i - 1) / (#ot - 1) or 0
+				local ci = math.floor(pr * (#cols - 1)) + 1
+				local ni = math.min(ci + 1, #cols)
+				local bl = (pr * (#cols - 1)) - (ci - 1)
+				local bc = cols[ci]:Lerp(cols[ni], bl)
+				local r = math.floor(bc.R * 255)
+				local g = math.floor(bc.G * 255)
+				local b = math.floor(bc.B * 255)
+				gt = gt .. string.format("<font color='rgb(%d,%d,%d)'>%s</font>", r, g, b, string.sub(ot, i, i))
+			end
+			lbl.Text = gt
+		end
+	end)
 end
 
 return PrintLib
